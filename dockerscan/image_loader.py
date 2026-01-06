@@ -24,7 +24,7 @@ def save_and_extract_image(image_name: str, extract_dir: Path) -> None:
                 check=True
             )
         
-        Logger().info(f"  Extracting tar archive...")
+        # Logger().info(f"  Extracting tar archive...")
         with tarfile.open(temp_tar_path, "r") as tar:
             tar.extractall(path=extract_dir)
         

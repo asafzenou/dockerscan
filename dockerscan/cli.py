@@ -10,6 +10,7 @@ from dockerscan.logger import Logger
 from dockerscan.image_loader import save_and_extract_image
 from dockerscan.filesystem import reconstruct_filesystem
 from dockerscan.os_detector import detect_os
+from dockerscan.package_scanner import PackageScanner
 
 
 def scan_image(image_name: str) -> None:
@@ -24,7 +25,7 @@ def scan_image(image_name: str) -> None:
         Logger().info(f"Extracting image to temporary directory...")
         save_and_extract_image(image_name, extract_dir)
         
-        Logger().info(f"Reconstructing filesystem from layers...")
+        # Logger().info(f"Reconstructing filesystem from layers...")
         reconstruct_filesystem(extract_dir, filesystem_dir)
         
         Logger().info(f"Detecting OS...")
@@ -35,6 +36,11 @@ def scan_image(image_name: str) -> None:
         else:
             Logger().error("Could not detect OS from /etc/os-release")
             sys.exit(1)
+
+        Logger().info(f"Scanning packages...")
+        scanner = PackageScanner()
+        packages = scanner.scan(filesystem_dir, os_info)
+        Logger().info(f"Found {len(packages)} installed packages")
 
 
 def main() -> None:
