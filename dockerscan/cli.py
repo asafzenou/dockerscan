@@ -39,8 +39,12 @@ def scan_image(image_name: str) -> None:
 
         Logger().info(f"Scanning packages...")
         scanner = PackageScanner()
-        packages = scanner.scan(filesystem_dir, os_info)
+        result = scanner.scan(filesystem_dir, os_info)
+        packages = result.get("packages", [])
         Logger().info(f"Found {len(packages)} installed packages")
+
+        if "note" in result:
+            Logger().info(f"Note: {result['note']}")
 
 
 def main() -> None:

@@ -24,11 +24,12 @@ def reconstruct_filesystem(extract_dir: Path, filesystem_dir: Path) -> None:
 
     layer_tars = _load_docker_layers(extract_dir)
 
-    Logger().info(f"Reconstructing filesystem from {len(layer_tars)} layers")
     Logger().info(f"Path: {filesystem_dir}")
+    Logger().info(f"Reconstructing filesystem from {len(layer_tars)} layers")
+
 
     for i, layer_tar in enumerate(layer_tars, 1):
-        Logger().info(f"Applying layer {i}/{len(layer_tars)}: {layer_tar.name}")
+        Logger().info(f"    Applying layer {i}/{len(layer_tars)}: {layer_tar.name}")
         _apply_layer(layer_tar, filesystem_dir)
 
 

@@ -7,23 +7,63 @@ from dockerscan.logger import Logger
 class PackageScanner:
     """Scan and extract OS packages from a Docker image filesystem."""
 
-    def scan(self, filesystem_dir: Path, os_name: str) -> list[dict]:
+    def scan(self, filesystem_dir: Path, os_name: str) -> dict:
+        """
+        Scan for packages in the filesystem.
+
+        Returns:
+            dict with 'packages' list and optional 'note' explaining limitations
+        """
         os_config = self._get_os_config(os_name)
         if not os_config:
-            return []
+            return {"packages": []}
 
         parser = self._get_parser(os_name, os_config)
-        if not parser:
-            return []
 
-        return self._scan_package_databases(
+        # No parser available
+        if not parser:
+            # Check if this is a known package manager with intentionally skipped parsing (MVP)
+            package_manager = os_config.get("package_manager")
+            if package_manager:
+                # Check if database actually exists
+                db_detected = self._check_package_databases_exist(
+                    filesystem_dir, os_config.get("db_files", [])
+                )
+                if db_detected:
+                    Logger().info(
+                        f"RPM database detected but parsing not implemented (MVP limitation)"
+                    )
+                    return {
+                        "packages": [],
+                        "note": f"{package_manager.upper()} database detected but parsing not implemented"
+                    }
+                else:
+                    Logger().info(f"OS '{os_name}' detected but no package database found")
+            else:
+                # No package manager at all (scratch, distroless)
+                Logger().info(
+                    f"OS '{os_name}' has no package manager (scratch/distroless/minimal image)"
+                )
+            return {"packages": []}
+
+        # Parser available - scan packages
+        packages = self._scan_package_databases(
             filesystem_dir,
             os_name,
             os_config["db_files"],
             parser,
         )
+        return {"packages": packages}
 
     # ───────────────────────── helpers ─────────────────────────
+
+    def _check_package_databases_exist(self, filesystem_dir: Path, db_files: list[str]) -> bool:
+        """Check if any package database files exist in the filesystem."""
+        for db_file in db_files:
+            db_path = filesystem_dir / db_file.lstrip("/")
+            if db_path.exists():
+                return True
+        return False
 
     def _get_os_config(self, os_name: str) -> dict | None:
         os_key = os_name.lower()
@@ -38,15 +78,14 @@ class PackageScanner:
     def _get_parser(self, os_name: str, os_config: dict):
         parser_key = os_config.get("parser")
 
-        if not parser_key:
-            Logger().info(
-                f"OS '{os_name}' has no package manager (scratch/distroless/minimal image)"
-            )
+        # No parser configured (intentional: scratch/distroless or MVP limitation)
+        if parser_key is None:
             return None
 
+        # Parser key exists but no implementation (unexpected)
         parser = PACKAGE_PARSERS.get(parser_key)
         if not parser:
-            Logger().warning(f"No parser registered for '{parser_key}'")
+            Logger().warning(f"Parser '{parser_key}' not registered (implementation missing)")
             return None
 
         return parser

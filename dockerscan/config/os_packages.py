@@ -29,11 +29,43 @@ OS_PACKAGE_CONFIG = {
         "parser": None,
         "mvp": True,
     },
+    # RPM-based systems (parsing not implemented in MVP)
+    "red hat enterprise linux": {
+        "package_manager": "rpm",
+        "db_files": ["/var/lib/rpm"],
+        "parser": None,
+        "mvp": True,
+    },
     "red hat enterprise linux 8.6": {
         "package_manager": "rpm",
-        "db_files": ["var/lib/rpm"],
-        "parser": "rpm",
-    }
+        "db_files": ["/var/lib/rpm"],
+        "parser": None,
+        "mvp": True,
+    },
+    "centos": {
+        "package_manager": "rpm",
+        "db_files": ["/var/lib/rpm"],
+        "parser": None,
+        "mvp": True,
+    },
+    "fedora": {
+        "package_manager": "rpm",
+        "db_files": ["/var/lib/rpm"],
+        "parser": None,
+        "mvp": True,
+    },
+    "almalinux": {
+        "package_manager": "rpm",
+        "db_files": ["/var/lib/rpm"],
+        "parser": None,
+        "mvp": True,
+    },
+    "rocky": {
+        "package_manager": "rpm",
+        "db_files": ["/var/lib/rpm"],
+        "parser": None,
+        "mvp": True,
+    },
 }
 
 RELEVANT_PATHS = (

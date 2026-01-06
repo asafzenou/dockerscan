@@ -15,7 +15,7 @@ def save_and_extract_image(image_name: str, extract_dir: Path) -> None:
         temp_tar_path = temp_tar.name
     
     try:
-        Logger().info(f"  Running: docker save {image_name}")
+        Logger().info(f"Running: docker save {image_name}")
         with open(temp_tar_path, "wb") as tar_file:
             result = subprocess.run(
                 ["docker", "save", image_name],
