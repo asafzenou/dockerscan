@@ -4,7 +4,8 @@ import json
 from pathlib import Path
 import shutil
 from dockerscan.logger import Logger
-
+import tempfile
+import tarfile
 
 
 def reconstruct_filesystem(extract_dir: Path, filesystem_dir: Path) -> None:
@@ -36,16 +37,27 @@ def reconstruct_filesystem(extract_dir: Path, filesystem_dir: Path) -> None:
         if not layer_path.exists():
             raise RuntimeError(f"Layer not found: {layer_path}")
         
-        import tempfile
         with tempfile.TemporaryDirectory() as temp_layer_dir:
-            import tarfile
             with tarfile.open(layer_path, "r") as tar:
-                tar.extractall(path=temp_layer_dir)
-            
+                # members = [
+                #     m for m in tar.getmembers()
+                #     if m.name.startswith("etc/")
+                # ]
+                members = [
+                    m for m in tar.getmembers()
+                    if m.name in ("etc/os-release", "usr/lib/os-release")
+                ]
+                tar.extractall(path=temp_layer_dir, members=members)
+
             layer_root = Path(temp_layer_dir)
             if (layer_root / "layer.tar").exists():
                 with tarfile.open(layer_root / "layer.tar", "r") as nested_tar:
-                    nested_tar.extractall(path=filesystem_dir)
+                    # nested_tar.extractall(path=filesystem_dir)
+                    members = [
+                        m for m in tar.getmembers()
+                        if m.name in ("etc/os-release", "usr/lib/os-release")
+                    ]
+                    tar.extractall(path=temp_layer_dir, members=members)
             else:
                 _merge_directory(layer_root, filesystem_dir)
 
