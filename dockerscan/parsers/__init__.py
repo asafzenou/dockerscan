@@ -2,10 +2,12 @@
 
 from dockerscan.parsers.dpkg import DpkgParser
 from dockerscan.parsers.apk import ApkParser
+from dockerscan.parsers.rpm import RpmParser
 
 
 PACKAGE_PARSERS = {
-    "dpkg": DpkgParser,
-    "apk": ApkParser,
+    "dpkg": DpkgParser(),  # Instance, not class
+    "apk": ApkParser(),    # Instance, not class
+    "rpm": RpmParser(),    # Instance, not class
 }
 

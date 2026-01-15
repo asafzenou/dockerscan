@@ -19,6 +19,7 @@ class Logger:
         name: str = "ETL_Pipeline",
         log_dir: Optional[str] = None,
         console_output: bool = True,
+        log_level: Optional[int] = None,
     ):
         """Implement singleton pattern - return same instance."""
         if cls._instance is None:
@@ -30,6 +31,7 @@ class Logger:
         name: str = "Logger",
         log_dir: Optional[str] = None,
         console_output: bool = True,
+        log_level: Optional[int] = None,
     ):
         """
         Initialize logger instance (only once due to singleton).
@@ -38,6 +40,7 @@ class Logger:
             name: Logger name.
             log_dir: Directory to save logs (default: logs/).
             console_output: Whether to also output to console/stdout (default: True).
+            log_level: Logging level (default: INFO, can be DEBUG for verbose output).
         """
         # Only initialize once
         if Logger._initialized:
@@ -46,13 +49,18 @@ class Logger:
         self.name = name
         self.log_dir = log_dir or self.LOG_DIR
         self.console_output = console_output
+        # Allow override via parameter or environment variable
+        self.log_level = log_level or (
+            logging.DEBUG if os.getenv("DEBUG", "").lower() in ("1", "true", "yes") 
+            else self.LOG_LEVEL
+        )
         os.makedirs(self.log_dir, exist_ok=True)
 
         # Clean up old logs before creating new one
         self._cleanup_old_logs()
 
         self.logger = logging.getLogger(name)
-        self.logger.setLevel(self.LOG_LEVEL)
+        self.logger.setLevel(logging.DEBUG)  # Logger accepts all levels
 
         # Remove existing handlers to avoid duplicates
         self.logger.handlers.clear()
@@ -105,7 +113,7 @@ class Logger:
         log_file = os.path.join(self.log_dir, f"etl_pipeline_{timestamp}.log")
 
         file_handler = logging.FileHandler(log_file, encoding='utf-8')
-        file_handler.setLevel(self.LOG_LEVEL)
+        file_handler.setLevel(self.log_level)  # Use configurable level
         file_handler.setFormatter(formatter)
 
         self.logger.addHandler(file_handler)
@@ -114,7 +122,7 @@ class Logger:
     def _setup_console_handler(self, formatter: logging.Formatter) -> None:
         """Setup console handler for logging to stdout."""
         console_handler = logging.StreamHandler()
-        console_handler.setLevel(self.LOG_LEVEL)
+        console_handler.setLevel(self.log_level)  # Use configurable level
         console_handler.setFormatter(formatter)
 
         self.logger.addHandler(console_handler)

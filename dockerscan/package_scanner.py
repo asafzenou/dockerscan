@@ -18,6 +18,7 @@ class PackageScanner:
         if not os_config:
             return {"packages": []}
 
+        Logger().info(f"Using config for '{os_name}': package_manager={os_config.get('package_manager')}, parser={os_config.get('parser')}")
         parser = self._get_parser(os_name, os_config)
 
         # No parser available
@@ -31,14 +32,15 @@ class PackageScanner:
                 )
                 if db_detected:
                     Logger().info(
-                        f"RPM database detected but parsing not implemented (MVP limitation)"
+                        f"{package_manager.upper()} database detected at {os_config.get('db_files')} but parsing not implemented (MVP limitation)"
                     )
                     return {
                         "packages": [],
-                        "note": f"{package_manager.upper()} database detected but parsing not implemented"
+                        "note": f"{package_manager.upper()} database detected but parsing not implemented",
+                        "package_manager": package_manager
                     }
                 else:
-                    Logger().info(f"OS '{os_name}' detected but no package database found")
+                    Logger().warning(f"OS '{os_name}' uses {package_manager} but database not found at {os_config.get('db_files')}")
             else:
                 # No package manager at all (scratch, distroless)
                 Logger().info(
@@ -61,7 +63,9 @@ class PackageScanner:
         """Check if any package database files exist in the filesystem."""
         for db_file in db_files:
             db_path = filesystem_dir / db_file.lstrip("/")
+            Logger().debug(f"Checking for package database: {db_file} -> {db_path}")
             if db_path.exists():
+                Logger().debug(f"Found package database: {db_path}")
                 return True
         return False
 
@@ -80,6 +84,7 @@ class PackageScanner:
 
         # No parser configured (intentional: scratch/distroless or MVP limitation)
         if parser_key is None:
+            Logger().debug(f"No parser configured for OS '{os_name}' (intentional: MVP limitation or minimal image)")
             return None
 
         # Parser key exists but no implementation (unexpected)
@@ -119,10 +124,16 @@ class PackageScanner:
 
     def _parse_db_file(self, db_path: Path, parser) -> list[dict]:
         try:
-            with open(db_path, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
-
-            parsed = parser.parse(content)
+            # Check if parser needs the file path (RPM) or content (dpkg/apk)
+            if hasattr(parser, 'parse_file'):
+                # Parser has parse_file method (for binary files like RPM)
+                parsed = parser.parse_file(db_path)
+            else:
+                # Parser expects content string (for text files like dpkg/apk)
+                with open(db_path, "r", encoding="utf-8", errors="ignore") as f:
+                    content = f.read()
+                parsed = parser.parse(content)
+            
             Logger().info(
                 f"Parsed {len(parsed)} packages from {db_path}"
             )
