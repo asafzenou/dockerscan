@@ -5,6 +5,7 @@ from dockerscan.config.logger import Logger
 from dockerscan.image_scanner.filesystem import Filesystem
 from dockerscan.image_scanner.os_detector import OSDetection
 from dockerscan.image_scanner.package_scanner import PackageScanner
+import json
 
 def from_docker_to_dir(image_name: str, extract_dir: Path,filesystem_dir: Path) -> None:
     Logger().info(f"Extracting image to temporary directory...")
@@ -47,10 +48,19 @@ def scan_image(image_name: str) -> dict:
 
 def main(args, parser) -> None:
     """Main CLI entrypoint."""
+    debug = True
     if args.command != "scan":
         parser.print_help()
         sys.exit(1)
-    data = scan_image(args.image_name)
+    if not debug:
+        data = scan_image(args.image_name)
+    if debug:
+        output_path = Path("json_debug_os_info.json")
+        with open(output_path, "r") as f:
+            data = json.load(f)
+    x = "x"
+
+
 
 
 
