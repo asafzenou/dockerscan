@@ -52,7 +52,7 @@ def scan_image(image_name: str) -> dict:
 
 def main(args, parser) -> None:
     """Main CLI entrypoint."""
-    debug = True
+    debug = False
     if args.command != "scan":
         parser.print_help()
         sys.exit(1)
@@ -63,27 +63,27 @@ def main(args, parser) -> None:
         with open(output_path, "r") as f:
             data = json.load(f)
 
-        # Enrich packages with vulnerability data
-        os_name = data.get("os_info", {}).get("name", "Unknown")
-        os_version = data.get("os_info", {}).get("version", "unknown")
-        packages = data.get("packages", [])
+    # Enrich packages with vulnerability data
+    os_name = data.get("os_info", {}).get("name", "Unknown")
+    os_version = data.get("os_info", {}).get("version", "unknown")
+    packages = data.get("packages", [])
 
-        Logger().info(f"Starting vulnerability enrichment for {os_name}...")
-        enriched_packages = enrich_packages_with_vulnerabilities(packages, os_name)
-        data["packages"] = enriched_packages
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        os_version_clean = os_version.replace(":", "_").replace("/", "_").replace(" ", "_")
-        html_output_dir = Path("html_reports") / f"{os_name}_{os_version_clean}_{timestamp}"
+    Logger().info(f"Starting vulnerability enrichment for {os_name}...")
+    enriched_packages = enrich_packages_with_vulnerabilities(packages, os_name)
+    data["packages"] = enriched_packages
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    os_version_clean = os_version.replace(":", "_").replace("/", "_").replace(" ", "_")
+    html_output_dir = Path("html_reports") / f"{os_name}_{os_version_clean}_{timestamp}"
 
-        html_report_path = generate_html_report(data, output_dir=html_output_dir)
-        Logger().info(f"HTML report generated: {html_report_path.resolve()}")
+    html_report_path = generate_html_report(data, output_dir=html_output_dir)
+    Logger().info(f"HTML report generated: {html_report_path.resolve()}")
 
-        # Open the HTML report in the default browser
-        try:
-            webbrowser.open(f"file:///{html_report_path.resolve()}")
-            Logger().info("Opening report in browser...")
-        except Exception as e:
-            Logger().warning(f"Could not open browser automatically: {e}")
+    # Open the HTML report in the default browser
+    try:
+        webbrowser.open(f"file:///{html_report_path.resolve()}")
+        Logger().info("Opening report in browser...")
+    except Exception as e:
+        Logger().warning(f"Could not open browser automatically: {e}")
 
 
 
