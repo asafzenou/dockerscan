@@ -1,16 +1,14 @@
 from pathlib import Path
 from dockerscan.config.os_packages import OS_PACKAGE_CONFIG
 from dockerscan.parsers import PACKAGE_PARSERS
-from dockerscan.logger import Logger
+from dockerscan.config.logger import Logger
 
 
 class PackageScanner:
     """Scan and extract OS packages from a Docker image filesystem."""
 
     def scan(self, filesystem_dir: Path, os_name: str) -> dict:
-        """
-        Scan for packages in the filesystem.
-        """
+        """ Scan for packages in the filesystem. """
         os_config = self._get_os_config(os_name)
         if not os_config:
             return {"packages": []}
@@ -18,44 +16,45 @@ class PackageScanner:
         Logger().info(f"Using config for '{os_name}': package_manager={os_config.get('package_manager')}, parser={os_config.get('parser')}")
         parser = self._get_parser(os_name, os_config)
 
-        # No parser available
-        if not parser:
-            # Check if this is a known package manager with intentionally skipped parsing (MVP)
-            package_manager = os_config.get("package_manager")
-            if package_manager:
-                # Check if database actually exists
-                db_detected = self._check_package_databases_exist(
-                    filesystem_dir, os_config.get("db_files", [])
-                )
-                if db_detected:
-                    db_files_str = ", ".join(os_config.get("db_files", []))
-                    Logger().warning(
-                        f"{package_manager.upper()} parsing not fully implemented yet. Database found at {db_files_str} but cannot extract packages."
-                    )
-                    return {
-                        "packages": [],
-                        "note": f"{package_manager.upper()} database detected but parsing not implemented",
-                        "package_manager": package_manager
-                    }
-                else:
-                    Logger().warning(f"OS '{os_name}' uses {package_manager} but database not found at {os_config.get('db_files')}")
-            else:
-                # No package manager at all (scratch, distroless)
-                Logger().info(
-                    f"OS '{os_name}' has no package manager (scratch/distroless/minimal image)"
-                )
-            return {"packages": []}
-
-        # Parser available - scan packages
-        packages = self._scan_package_databases(
-            filesystem_dir,
-            os_name,
-            os_config["db_files"],
-            parser,
-        )
-        return {"packages": packages}
+        if  parser:
+            packages = self._scan_package_databases(
+                filesystem_dir,
+                os_name,
+                os_config["db_files"],
+                parser,
+            )
+            return {"packages": packages}
+        return self.__parser_not_exits(os_config, filesystem_dir, os_name)
 
     # ───────────────────────── helpers ─────────────────────────
+
+    def __parser_not_exits(self, os_config, filesystem_dir, os_name):
+        # Check if this is a known package manager with intentionally skipped parsing (MVP)
+        package_manager = os_config.get("package_manager")
+        if package_manager:
+            # Check if database actually exists
+            db_detected = self._check_package_databases_exist(
+                filesystem_dir, os_config.get("db_files", [])
+            )
+            if db_detected:
+                db_files_str = ", ".join(os_config.get("db_files", []))
+                Logger().warning(
+                    f"{package_manager.upper()} parsing not fully implemented yet. Database found at {db_files_str} but cannot extract packages."
+                )
+                return {
+                    "packages": [],
+                    "note": f"{package_manager.upper()} database detected but parsing not implemented",
+                    "package_manager": package_manager
+                }
+            else:
+                Logger().warning(
+                    f"OS '{os_name}' uses {package_manager} but database not found at {os_config.get('db_files')}")
+        else:
+            # No package manager at all (scratch, distroless)
+            Logger().info(
+                f"OS '{os_name}' has no package manager (scratch/distroless/minimal image)"
+            )
+        return {"packages": []}
 
     def _check_package_databases_exist(self, filesystem_dir: Path, db_files: list[str]) -> bool:
         """Check if any package database files exist in the filesystem."""

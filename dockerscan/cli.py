@@ -1,11 +1,7 @@
-"""CLI entrypoint for dockerscan."""
-
-import argparse
 import sys
 from pathlib import Path
 import tempfile
-import shutil
-from dockerscan.logger import Logger
+from dockerscan.config.logger import Logger
 from dockerscan.filesystem import Filesystem
 from dockerscan.os_detector import OSDetection
 from dockerscan.package_scanner import PackageScanner
@@ -46,23 +42,8 @@ def scan_image(image_name: str) -> None:
         get_packages(filesystem_dir, os_info)
 
 
-def main() -> None:
+def main(args, parser) -> None:
     """Main CLI entrypoint."""
-    parser = argparse.ArgumentParser(
-        description="Docker image scanner MVP",
-        prog="dockerscan"
-    )
-    
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
-    
-    scan_parser = subparsers.add_parser("scan", help="Scan a Docker image")
-    scan_parser.add_argument(
-        "image_name",
-        help="Name of the Docker image to scan (e.g., ubuntu:20.04)"
-    )
-    
-    args = parser.parse_args()
-    
     if args.command == "scan":
         scan_image(args.image_name)
     else:

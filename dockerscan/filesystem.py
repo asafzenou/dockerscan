@@ -4,7 +4,7 @@ import subprocess
 import tarfile
 from pathlib import Path
 import tempfile
-from dockerscan.logger import Logger
+from dockerscan.config.logger import Logger
 
 class Filesystem:
 
