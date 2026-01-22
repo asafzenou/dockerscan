@@ -3,8 +3,10 @@
 from pathlib import Path
 
 class OSDetection:
+    version_dict = {}
+
     @staticmethod
-    def detect_os(filesystem_dir: Path) -> str:
+    def detect_os(filesystem_dir: Path) -> dict[str, str]:
         """Detect OS name and version from /etc/os-release."""
         os_release_path = filesystem_dir / "etc" / "os-release"
 
@@ -28,9 +30,29 @@ class OSDetection:
 
         name = name.strip('"\'')
         version = version.strip('"\'')
-
+        os_info["name"] = name
+        os_info["version"] = version
+        OSDetection.version_dict = os_info
         if version:
-            return f"{name} {version}"
+            return {'name': name, 'version': version}
         else:
-            return name
+            return {'name': name}
+
+    @staticmethod
+    def get_os():
+        try:
+            if not OSDetection.version_dict:
+                return "dont have name and version info"
+
+            name = OSDetection.version_dict.get('name')
+            version = OSDetection.version_dict.get('version')
+
+            if not name:
+                return "dont have name info"
+            if not version:
+                return name
+
+            return f"{name} {version}"
+        except Exception:
+            return "dont have name and version info"
 

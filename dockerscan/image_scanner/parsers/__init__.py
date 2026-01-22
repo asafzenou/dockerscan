@@ -1,8 +1,8 @@
 """Package parsers registry for different OS package managers."""
 
-from dockerscan.parsers.dpkg import DpkgParser
-from dockerscan.parsers.apk import ApkParser
-from dockerscan.parsers.rpm import RpmParser
+from dockerscan.image_scanner.parsers.dpkg import DpkgParser
+from dockerscan.image_scanner.parsers.apk import ApkParser
+from dockerscan.image_scanner.parsers.rpm import RpmParser
 
 
 PACKAGE_PARSERS = {

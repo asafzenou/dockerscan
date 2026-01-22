@@ -1,6 +1,6 @@
 from pathlib import Path
 from dockerscan.config.os_packages import OS_PACKAGE_CONFIG
-from dockerscan.parsers import PACKAGE_PARSERS
+from dockerscan.image_scanner.parsers import PACKAGE_PARSERS
 from dockerscan.config.logger import Logger
 
 
