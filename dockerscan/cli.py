@@ -6,12 +6,22 @@ from pathlib import Path
 import tempfile
 import shutil
 from dockerscan.logger import Logger
-
-from dockerscan.image_loader import save_and_extract_image
-from dockerscan.filesystem import reconstruct_filesystem
-from dockerscan.os_detector import detect_os
+from dockerscan.filesystem import Filesystem
+from dockerscan.os_detector import OSDetection
 from dockerscan.package_scanner import PackageScanner
 
+def from_docker_to_dir(image_name: str, extract_dir: Path,filesystem_dir: Path) -> None:
+    Logger().info(f"Extracting image to temporary directory...")
+    filesystem = Filesystem()
+    filesystem.save_and_extract_image(image_name, extract_dir)
+    filesystem.reconstruct_filesystem(extract_dir, filesystem_dir)
+
+def get_packages(filesystem_dir: Path, os_info: str) -> None:
+    Logger().info(f"Scanning packages...")
+    scanner = PackageScanner()
+    result = scanner.scan(filesystem_dir, os_info)
+    packages = result.get("packages", [])
+    Logger().info(f"Found {len(packages)} installed packages")
 
 def scan_image(image_name: str) -> None:
     """Scan a Docker image and detect OS information."""
@@ -21,30 +31,19 @@ def scan_image(image_name: str) -> None:
         temp_path = Path(temp_dir)
         extract_dir = temp_path / "extracted"
         filesystem_dir = temp_path / "filesystem"
-        
-        Logger().info(f"Extracting image to temporary directory...")
-        save_and_extract_image(image_name, extract_dir)
-        
-        # Logger().info(f"Reconstructing filesystem from layers...")
-        reconstruct_filesystem(extract_dir, filesystem_dir)
-        
+
+        from_docker_to_dir(image_name, extract_dir, filesystem_dir)
+
         Logger().info(f"Detecting OS...")
-        os_info = detect_os(filesystem_dir)
-        
+        os_info = OSDetection.detect_os(filesystem_dir)
+
         if os_info:
             Logger().info(f"Detected OS: {os_info}")
         else:
             Logger().error("Could not detect OS from /etc/os-release")
             sys.exit(1)
 
-        Logger().info(f"Scanning packages...")
-        scanner = PackageScanner()
-        result = scanner.scan(filesystem_dir, os_info)
-        packages = result.get("packages", [])
-        Logger().info(f"Found {len(packages)} installed packages")
-
-        if "note" in result:
-            Logger().info(f"Note: {result['note']}")
+        get_packages(filesystem_dir, os_info)
 
 
 def main() -> None:
@@ -69,4 +68,3 @@ def main() -> None:
     else:
         parser.print_help()
         sys.exit(1)
-
