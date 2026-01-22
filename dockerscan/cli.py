@@ -6,6 +6,7 @@ from dockerscan.image_scanner.filesystem import Filesystem
 from dockerscan.image_scanner.os_detector import OSDetection
 from dockerscan.image_scanner.package_scanner import PackageScanner
 import json
+from dockerscan.data_packagers import enrich_packages_with_vulnerabilities
 
 def from_docker_to_dir(image_name: str, extract_dir: Path,filesystem_dir: Path) -> None:
     Logger().info(f"Extracting image to temporary directory...")
@@ -58,7 +59,25 @@ def main(args, parser) -> None:
         output_path = Path("json_debug_os_info.json")
         with open(output_path, "r") as f:
             data = json.load(f)
-    x = "x"
+
+        # Enrich packages with vulnerability data
+        os_name = data.get("os_info", {}).get("name", "Unknown")
+        packages = data.get("packages", [])
+
+        Logger().info(f"Starting vulnerability enrichment for {os_name}...")
+        enriched_packages = enrich_packages_with_vulnerabilities(packages, os_name)
+
+        # Update data with enriched packages
+        data["packages"] = enriched_packages
+
+        # Save enriched data
+        enriched_output_path = Path("json_enriched_packages.json")
+        with open(enriched_output_path, "w") as f:
+            json.dump(data, f, indent=2)
+
+        Logger().info(f"Enriched data saved to: {enriched_output_path}")
+
+
 
 
 
