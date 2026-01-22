@@ -7,6 +7,8 @@ from dockerscan.image_scanner.os_detector import OSDetection
 from dockerscan.image_scanner.package_scanner import PackageScanner
 import json
 from dockerscan.data_packagers import enrich_packages_with_vulnerabilities
+from dockerscan.html_output import generate_html_report
+from datetime import datetime
 
 def from_docker_to_dir(image_name: str, extract_dir: Path,filesystem_dir: Path) -> None:
     Logger().info(f"Extracting image to temporary directory...")
@@ -62,20 +64,18 @@ def main(args, parser) -> None:
 
         # Enrich packages with vulnerability data
         os_name = data.get("os_info", {}).get("name", "Unknown")
+        os_version = data.get("os_info", {}).get("version", "unknown")
         packages = data.get("packages", [])
 
         Logger().info(f"Starting vulnerability enrichment for {os_name}...")
         enriched_packages = enrich_packages_with_vulnerabilities(packages, os_name)
-
-        # Update data with enriched packages
         data["packages"] = enriched_packages
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        os_version_clean = os_version.replace(":", "_").replace("/", "_").replace(" ", "_")
+        html_output_dir = Path("html_reports") / f"{os_name}_{os_version_clean}_{timestamp}"
 
-        # Save enriched data
-        enriched_output_path = Path("json_enriched_packages.json")
-        with open(enriched_output_path, "w") as f:
-            json.dump(data, f, indent=2)
-
-        Logger().info(f"Enriched data saved to: {enriched_output_path}")
+        html_report_path = generate_html_report(data, output_dir=html_output_dir)
+        Logger().info(f"HTML report generated: {html_report_path.resolve()}")
 
 
 
