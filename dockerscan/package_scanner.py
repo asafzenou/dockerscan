@@ -10,9 +10,6 @@ class PackageScanner:
     def scan(self, filesystem_dir: Path, os_name: str) -> dict:
         """
         Scan for packages in the filesystem.
-
-        Returns:
-            dict with 'packages' list and optional 'note' explaining limitations
         """
         os_config = self._get_os_config(os_name)
         if not os_config:
@@ -31,8 +28,9 @@ class PackageScanner:
                     filesystem_dir, os_config.get("db_files", [])
                 )
                 if db_detected:
-                    Logger().info(
-                        f"{package_manager.upper()} database detected at {os_config.get('db_files')} but parsing not implemented (MVP limitation)"
+                    db_files_str = ", ".join(os_config.get("db_files", []))
+                    Logger().warning(
+                        f"{package_manager.upper()} parsing not fully implemented yet. Database found at {db_files_str} but cannot extract packages."
                     )
                     return {
                         "packages": [],
@@ -134,9 +132,7 @@ class PackageScanner:
                     content = f.read()
                 parsed = parser.parse(content)
             
-            Logger().info(
-                f"Parsed {len(parsed)} packages from {db_path}"
-            )
+            Logger().info(f"Parsed {len(parsed)} packages from {db_path}")
             return parsed
 
         except Exception as e:
