@@ -9,6 +9,7 @@ import json
 from dockerscan.data_packagers import enrich_packages_with_vulnerabilities
 from dockerscan.html_output import generate_html_report
 from datetime import datetime
+import webbrowser
 
 def from_docker_to_dir(image_name: str, extract_dir: Path,filesystem_dir: Path) -> None:
     Logger().info(f"Extracting image to temporary directory...")
@@ -76,6 +77,13 @@ def main(args, parser) -> None:
 
         html_report_path = generate_html_report(data, output_dir=html_output_dir)
         Logger().info(f"HTML report generated: {html_report_path.resolve()}")
+
+        # Open the HTML report in the default browser
+        try:
+            webbrowser.open(f"file:///{html_report_path.resolve()}")
+            Logger().info("Opening report in browser...")
+        except Exception as e:
+            Logger().warning(f"Could not open browser automatically: {e}")
 
 
 
