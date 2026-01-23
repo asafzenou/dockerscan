@@ -7,7 +7,7 @@ json_enriched_packages.json
 html_reports/*
 # C extensions
 *.so
-
+vulnerability_report.html
 # Distribution / packaging
 .Python
 build/

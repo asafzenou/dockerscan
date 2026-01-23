@@ -182,6 +182,51 @@ a:hover {{
     margin-top: 30px;
     text-align: right;
 }}
+.filters {{
+    background: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}}
+.filter-group {{
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 10px;
+}}
+.filter-group label {{
+    display: block;
+    font-weight: bold;
+    color: #34495e;
+    margin-bottom: 5px;
+    font-size: 14px;
+}}
+.filter-group input,
+.filter-group select {{
+    padding: 8px 12px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 200px;
+}}
+.filter-group button {{
+    padding: 8px 16px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 21px;
+}}
+.filter-group button:hover {{
+    background: #2980b9;
+}}
+.no-results {{
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+    font-size: 16px;
+}}
 </style>
 </head>
 <body>
@@ -211,7 +256,30 @@ a:hover {{
 </div>
 
 <h2>Package Vulnerabilities</h2>
-<table>
+
+<div class="filters">
+    <div class="filter-group">
+        <label for="filterPackage">Package Name:</label>
+        <input type="text" id="filterPackage" placeholder="Filter by package name...">
+    </div>
+    <div class="filter-group">
+        <label for="filterVulnCount">Vulnerability Count:</label>
+        <select id="filterVulnCount">
+            <option value="">All</option>
+            <option value="0">0 (No vulnerabilities)</option>
+            <option value=">0">&gt; 0 (Has vulnerabilities)</option>
+            <option value="1">Exactly 1</option>
+            <option value="2">Exactly 2</option>
+            <option value="3">Exactly 3</option>
+            <option value=">3">&gt; 3</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <button onclick="resetFilters()">Reset Filters</button>
+    </div>
+</div>
+
+<table id="vulnTable">
 <thead>
 <tr>
     <th>Package</th>
@@ -256,7 +324,7 @@ a:hover {{
             details_html = '<span style="color: #27ae60;">✓ No known vulnerabilities</span>'
 
         html += f"""
-<tr class="{row_class}">
+<tr class="{row_class}" data-package="{pkg_name.lower()}" data-vuln-count="{vuln_count}">
     <td><strong>{pkg_name}</strong></td>
     <td><code>{pkg_version}</code></td>
     <td style="text-align: center;"><strong>{vuln_count}</strong></td>
@@ -273,6 +341,74 @@ a:hover {{
 </div>
 
 </div>
+
+<script>
+// Filter functionality
+function filterTable() {{
+    const packageFilter = document.getElementById('filterPackage').value.toLowerCase();
+    const vulnCountFilter = document.getElementById('filterVulnCount').value;
+    
+    const rows = document.querySelectorAll('#vulnTable tbody tr');
+    let visibleCount = 0;
+    
+    rows.forEach(row => {{
+        const packageName = row.getAttribute('data-package');
+        const vulnCount = parseInt(row.getAttribute('data-vuln-count'));
+        
+        let showRow = true;
+        
+        // Filter by package name
+        if (packageFilter && !packageName.includes(packageFilter)) {{
+            showRow = false;
+        }}
+        
+        // Filter by vulnerability count
+        if (vulnCountFilter) {{
+            if (vulnCountFilter === '0' && vulnCount !== 0) {{
+                showRow = false;
+            }} else if (vulnCountFilter === '>0' && vulnCount === 0) {{
+                showRow = false;
+            }} else if (vulnCountFilter === '1' && vulnCount !== 1) {{
+                showRow = false;
+            }} else if (vulnCountFilter === '2' && vulnCount !== 2) {{
+                showRow = false;
+            }} else if (vulnCountFilter === '3' && vulnCount !== 3) {{
+                showRow = false;
+            }} else if (vulnCountFilter === '>3' && vulnCount <= 3) {{
+                showRow = false;
+            }}
+        }}
+        
+        row.style.display = showRow ? '' : 'none';
+        if (showRow) visibleCount++;
+    }});
+    
+    // Show "no results" message if no rows are visible
+    const existingNoResults = document.querySelector('.no-results');
+    if (existingNoResults) {{
+        existingNoResults.remove();
+    }}
+    
+    if (visibleCount === 0) {{
+        const table = document.getElementById('vulnTable');
+        const noResultsDiv = document.createElement('div');
+        noResultsDiv.className = 'no-results';
+        noResultsDiv.textContent = 'No packages match the selected filters.';
+        table.parentNode.insertBefore(noResultsDiv, table.nextSibling);
+    }}
+}}
+
+function resetFilters() {{
+    document.getElementById('filterPackage').value = '';
+    document.getElementById('filterVulnCount').value = '';
+    filterTable();
+}}
+
+// Attach event listeners
+document.getElementById('filterPackage').addEventListener('input', filterTable);
+document.getElementById('filterVulnCount').addEventListener('change', filterTable);
+</script>
+
 </body>
 </html>
 """
