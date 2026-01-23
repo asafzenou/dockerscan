@@ -25,13 +25,13 @@ class OSDetection:
                     value = value.strip('"\'')
                     os_info[key] = value
 
-        name = os_info.get("NAME") or os_info.get("ID", "unknown")
-        version = os_info.get("VERSION_ID") or os_info.get("VERSION", "")
+        name = os_info.get('NAME') or os_info.get('ID', 'unknown')
+        version = os_info.get('VERSION_ID') or os_info.get('VERSION', '')
 
         name = name.strip('"\'')
         version = version.strip('"\'')
-        os_info["name"] = name
-        os_info["version"] = version
+        os_info['name'] = name
+        os_info['version'] = version
         OSDetection.version_dict = os_info
         if version:
             return {'name': name, 'version': version}

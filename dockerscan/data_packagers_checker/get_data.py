@@ -1,6 +1,6 @@
 """Data enrichment functions for package vulnerability scanning."""
 
-from dockerscan.data_packagers.osv_client import OSVClient
+from dockerscan.data_packagers_checker.osv_client import OSVClient
 from dockerscan.config.logger import Logger
 
 
@@ -57,7 +57,12 @@ def enrich_packages_with_vulnerabilities(packages: list, os_name: str) -> list:
             Logger().warning(
                 f"  └─ Found {vuln_data['count']} vulnerability(ies) in {package_name}"
             )
+    enriched_packages_sorted = sorted(
+        enriched_packages,
+        key=lambda p: p["vulnerabilities"]["count"],
+        reverse=True
+    )
 
     Logger().info(f"Vulnerability scan complete: {vuln_count_total} total vulnerabilities found")
-    return enriched_packages
+    return enriched_packages_sorted
 
