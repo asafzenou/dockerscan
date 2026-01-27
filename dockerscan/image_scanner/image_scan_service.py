@@ -1,7 +1,9 @@
+import json
 from pathlib import Path
 import tempfile
 import sys
-
+from dockerscan.image_scanner.runtime_context import RuntimeContextExtractor
+from dockerscan.image_scanner.package_usage import PackageUsageResolver
 from dockerscan.config.logger import Logger
 from dockerscan.image_scanner.filesystem import Filesystem
 from dockerscan.image_scanner.package_scanner import PackageScanner
@@ -26,7 +28,7 @@ class ImageScanService:
         self.logger.info(f"Found {len(packages)} installed packages")
         return packages
 
-    def scan_image(self, image_name: str) -> dict:
+    def scan_image(self, image_name: str):
         """
         Scan a Docker image and return OS info + installed packages.
         """
@@ -53,5 +55,17 @@ class ImageScanService:
             packages = self.get_packages(filesystem_dir, OSDetection.get_os())
             data["packages"] = packages
 
+            runtime_ctx = RuntimeContextExtractor().extract(image_name)
+            data["runtime_context"] = runtime_ctx
+
+            resolver = PackageUsageResolver()
+
+            for pkg in data.get("packages", []):
+                pkg["usage_context"] = resolver.resolve(
+                    pkg["name"],
+                    data.get("runtime_context", {})
+                )
+
         self.logger.info("Scan complete.")
+        # data = json.dumps(data)
         return data

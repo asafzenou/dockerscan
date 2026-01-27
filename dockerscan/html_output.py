@@ -50,6 +50,7 @@ def generate_html_report(data: dict, output_dir: Path = None) -> Path:
     os_name = os_info.get("name", "Unknown OS")
     os_version = os_info.get("version", "")
     packages = data.get("packages", [])
+    runtime_context = data.get("runtime_context", {})
 
     # Calculate statistics
     total_packages = len(packages)
@@ -315,6 +316,45 @@ a:hover {{
     color: #7f8c8d;
     font-size: 16px;
 }}
+.runtime-context {{
+    background: #f0f8ff;
+    padding: 20px;
+    border-radius: 6px;
+    border-left: 4px solid #2980b9;
+    margin: 20px 0;
+}}
+.runtime-context h3 {{
+    margin: 0 0 15px 0;
+    color: #34495e;
+    font-size: 16px;
+}}
+.runtime-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}}
+.runtime-item {{
+    background: white;
+    padding: 12px;
+    border-radius: 4px;
+    border-left: 3px solid #3498db;
+}}
+.runtime-label {{
+    font-weight: bold;
+    color: #34495e;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}}
+.runtime-value {{
+    color: #555;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    word-break: break-word;
+    padding: 8px;
+    background: #f9f9f9;
+    border-radius: 3px;
+}}
 </style>
 </head>
 <body>
@@ -343,6 +383,48 @@ a:hover {{
     {f'<span style="color: #7f8c8d;"> – Version {os_version}</span>' if os_version else ''}
 </div>
 
+"""
+
+    # Add runtime context section if available
+    if runtime_context:
+        entrypoint = runtime_context.get("entrypoint") or []
+        cmd = runtime_context.get("cmd") or []
+
+        # Handle user field - can be string or object
+        user_data = runtime_context.get("user", "root")
+        if isinstance(user_data, dict):
+            user = user_data.get("value") or "root"
+        else:
+            user = user_data or "root"
+
+        exposed_ports = runtime_context.get("exposed_ports") or []
+
+        runtime_html = """<h2>Container Runtime Configuration</h2>
+<div class="runtime-context">
+    <div class="runtime-grid">
+        <div class="runtime-item">
+            <div class="runtime-label">Entrypoint</div>
+            <div class="runtime-value">""" + (", ".join(entrypoint) if entrypoint else "None") + """</div>
+        </div>
+        <div class="runtime-item">
+            <div class="runtime-label">Command</div>
+            <div class="runtime-value">""" + (", ".join(cmd) if cmd else "None") + """</div>
+        </div>
+        <div class="runtime-item">
+            <div class="runtime-label">User</div>
+            <div class="runtime-value">""" + user + """</div>
+        </div>
+        <div class="runtime-item">
+            <div class="runtime-label">Exposed Ports</div>
+            <div class="runtime-value">""" + (", ".join(exposed_ports) if exposed_ports else "None") + """</div>
+        </div>
+    </div>
+</div>
+
+"""
+        html += runtime_html
+
+    html += """
 <h2>Package Vulnerabilities</h2>
 
 <div class="filters">
@@ -387,6 +469,11 @@ a:hover {{
         vuln_count = vulnerabilities.get("count", 0)
         vuln_items = vulnerabilities.get("items", [])
 
+        # Get usage context if available
+        usage_context = pkg.get("usage_context", {})
+        confidence = usage_context.get("confidence", "unknown") if usage_context else "unknown"
+        used_at_runtime = usage_context.get("used_at_runtime", False) if usage_context else False
+
         row_class = "vulnerable" if vuln_count > 0 else ""
 
         # Build vulnerability details
@@ -402,7 +489,8 @@ a:hover {{
 
                 # New fields
                 affected_ecosystem = vuln.get("affected_ecosystem", "")
-                urgency = (vuln.get("urgency") or "").lower()
+                urgency_raw = vuln.get("urgency")
+                urgency = (urgency_raw or "").lower() if urgency_raw else ""
                 versions = vuln.get("versions", [])
                 published = vuln.get("published", "")
                 modified = vuln.get("modified", "")
@@ -489,9 +577,16 @@ a:hover {{
         else:
             details_html = '<span style="color: #27ae60;">✓ No known vulnerabilities</span>'
 
+        # Build usage context badge
+        usage_badge = ""
+        if usage_context:
+            runtime_indicator = "🔴 Runtime Used" if used_at_runtime else "⚪ Build Time"
+            confidence_class = f"confidence-{confidence}".lower()
+            usage_badge = f'<br><small style="margin-top: 8px; display: block;"><strong>Usage:</strong> {runtime_indicator} | Confidence: <span style="font-weight: bold;">{confidence}</span></small>'
+
         html += f"""
 <tr class="{row_class}" data-package="{pkg_name.lower()}" data-vuln-count="{vuln_count}">
-    <td><strong>{pkg_name}</strong></td>
+    <td><strong>{pkg_name}</strong>{usage_badge}</td>
     <td><code>{pkg_version}</code></td>
     <td style="text-align: center;"><strong>{vuln_count}</strong></td>
     <td class="vuln-details">{details_html}</td>

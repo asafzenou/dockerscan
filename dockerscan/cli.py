@@ -18,6 +18,8 @@ def main(args, parser) -> None:
         sys.exit(1)
     if not debug:
         data = scanner.scan_image(args.image_name)
+        # data['packages'] = data['packages'][:5]
+        data = json.dumps(data)
     if debug:
         output_path = Path("json_debug_os_info.json")
         with open(output_path, "r") as f:
@@ -25,7 +27,7 @@ def main(args, parser) -> None:
 
     vul_enc = VulnerabilityEnrichmentService(data)
     vul_enc.enrich()
-
+    Logger().info(json.dumps(data, indent=2, ensure_ascii=False))
     html_report_path = generate_html_report(vul_enc.get_data(), output_dir=vul_enc.get_html_output_dir())
     Logger().info(f"HTML report generated: {html_report_path.resolve()}")
 
