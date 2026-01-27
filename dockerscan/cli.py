@@ -5,7 +5,7 @@ from dockerscan.image_scanner.image_scan_service import ImageScanService
 import json
 from dockerscan.data_packagers_checker.vulnerability_enrichment_service import VulnerabilityEnrichmentService
 from dockerscan.html_output import generate_html_report
-from datetime import datetime
+from dockerscan.agents.orchestrator import AnalysisOrchestrator
 import webbrowser
 
 def main(args, parser) -> None:
@@ -27,6 +27,21 @@ def main(args, parser) -> None:
 
     vul_enc = VulnerabilityEnrichmentService(data)
     vul_enc.enrich()
+    orchestrator = AnalysisOrchestrator()
+
+    data = vul_enc.get_data()
+
+    os_info = data.get("os_info", {})
+    runtime_context = data.get("runtime_context", {})
+
+    for pkg in data.get("packages", []):
+        analysis_result = orchestrator.analyze_package(
+            pkg=pkg,
+            os_info=os_info,
+            runtime_context=runtime_context
+        )
+        pkg.update(analysis_result)
+
     Logger().info(json.dumps(data, indent=2, ensure_ascii=False))
     html_report_path = generate_html_report(vul_enc.get_data(), output_dir=vul_enc.get_html_output_dir())
     Logger().info(f"HTML report generated: {html_report_path.resolve()}")
