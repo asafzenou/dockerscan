@@ -169,6 +169,94 @@ tr.vulnerable:hover {{
     background: #f9f9f9;
     border-radius: 4px;
 }}
+.patch-status {{
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-top: 6px;
+}}
+.patch-available {{
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}}
+.patch-not-available {{
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}}
+.fixed-version {{
+    font-family: 'Courier New', monospace;
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}}
+.vuln-meta {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-size: 12px;
+}}
+.meta-item {{
+    display: flex;
+    flex-direction: column;
+}}
+.meta-label {{
+    font-weight: bold;
+    color: #34495e;
+    font-size: 11px;
+    text-transform: uppercase;
+}}
+.meta-value {{
+    color: #555;
+    word-break: break-word;
+}}
+.urgency-critical {{
+    background: #c0392b;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}}
+.urgency-high {{
+    background: #e74c3c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}}
+.urgency-medium {{
+    background: #f39c12;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}}
+.urgency-low {{
+    background: #27ae60;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+}}
+.references-list {{
+    margin-top: 6px;
+    padding-left: 16px;
+}}
+.references-list li {{
+    margin: 3px 0;
+    font-size: 11px;
+}}
+.references-list a {{
+    color: #2980b9;
+    text-decoration: none;
+}}
+.references-list a:hover {{
+    text-decoration: underline;
+}}
 a {{
     color: #2980b9;
     text-decoration: none;
@@ -309,15 +397,93 @@ a:hover {{
                 vuln_summary = vuln.get("summary", "No summary available")
                 vuln_severity = vuln.get("severity", "Unknown")
                 vuln_url = vuln.get("details_url", "#")
+                patch_status = vuln.get("patch_status", "unknown")
+                fixed_version = vuln.get("fixed_version", None)
+
+                # New fields
+                affected_ecosystem = vuln.get("affected_ecosystem", "")
+                urgency = (vuln.get("urgency") or "").lower()
+                versions = vuln.get("versions", [])
+                published = vuln.get("published", "")
+                modified = vuln.get("modified", "")
+                references = vuln.get("references", [])
+                upstream = vuln.get("upstream", [])
 
                 sev_class = severity_class(vuln_severity)
+
+                # Determine patch status styling
+                patch_class = "patch-available" if patch_status.lower() == "patched" else "patch-not-available"
+                patch_text = "✓ Patch Available" if patch_status.lower() == "patched" else "✗ No Patch Available"
+
+                # Build fixed version info
+                fixed_version_html = ""
+                if fixed_version:
+                    fixed_version_html = f'<br><small style="color: #555;"><strong>Fixed in:</strong> <span class="fixed-version">{fixed_version}</span></small>'
+
+                # Build urgency badge
+                urgency_badge = ""
+                if urgency:
+                    urgency_class = f"urgency-{urgency}"
+                    urgency_text = urgency.capitalize()
+                    urgency_badge = f'<span class="{urgency_class}">{urgency_text}</span>'
+
+                # Build versions list
+                versions_html = ""
+                if versions:
+                    versions_text = ", ".join(versions[:5])  # Show first 5 versions
+                    if len(versions) > 5:
+                        versions_text += f", +{len(versions) - 5} more"
+                    versions_html = f'<div class="meta-item"><span class="meta-label">Affected Versions</span><span class="meta-value"><code>{versions_text}</code></span></div>'
+
+                # Build dates
+                dates_html = ""
+                date_parts = []
+                if published:
+                    date_parts.append(f'<div class="meta-item"><span class="meta-label">Published</span><span class="meta-value">{published}</span></div>')
+                if modified:
+                    date_parts.append(f'<div class="meta-item"><span class="meta-label">Modified</span><span class="meta-value">{modified}</span></div>')
+                if date_parts:
+                    dates_html = "".join(date_parts)
+
+                # Build references list
+                references_html = ""
+                if references:
+                    refs_list = ""
+                    for ref in references[:3]:  # Show first 3 references
+                        refs_list += f'<li><a href="{ref}" target="_blank">{ref[:60]}...</a></li>'
+                    if len(references) > 3:
+                        refs_list += f'<li><em>+{len(references) - 3} more references</em></li>'
+                    references_html = f'<div class="meta-item"><span class="meta-label">References</span><ul class="references-list">{refs_list}</ul></div>'
+
+                # Build upstream list
+                upstream_html = ""
+                if upstream:
+                    upstream_text = ", ".join(upstream[:3])  # Show first 3
+                    if len(upstream) > 3:
+                        upstream_text += f", +{len(upstream) - 3} more"
+                    upstream_html = f'<div class="meta-item"><span class="meta-label">Upstream</span><span class="meta-value">{upstream_text}</span></div>'
+
+                # Build metadata section
+                meta_html = ""
+                if affected_ecosystem or urgency_badge or versions_html or dates_html or references_html or upstream_html:
+                    meta_items = ""
+                    if affected_ecosystem:
+                        meta_items += f'<div class="meta-item"><span class="meta-label">Ecosystem</span><span class="meta-value">{affected_ecosystem}</span></div>'
+                    if urgency_badge:
+                        meta_items += f'<div class="meta-item"><span class="meta-label">Urgency</span><span class="meta-value">{urgency_badge}</span></div>'
+                    meta_items += versions_html
+                    meta_items += dates_html
+                    meta_items += upstream_html
+                    meta_html = f'<div class="vuln-meta">{meta_items}{references_html}</div>'
 
                 details_html += f"""
                 <div class="vuln-item">
                     <span class="badge {sev_class}">{vuln_id}</span><br>
                     <small style="color: #555;">{vuln_summary}</small><br>
                     <small style="color: #7f8c8d;"><strong>Severity:</strong> {vuln_severity}</small><br>
-                    <a href="{vuln_url}" target="_blank">🔗 View details</a>
+                    <span class="patch-status {patch_class}">{patch_text}</span>{fixed_version_html}
+                    {meta_html}
+                    <br><a href="{vuln_url}" target="_blank">🔗 View details</a>
                 </div>
                 """
         else:

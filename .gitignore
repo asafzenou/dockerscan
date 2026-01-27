@@ -3,6 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 json_debug_os_info.json
+json_debug_os_info_backup.json
 json_enriched_packages.json
 html_reports/*
 # C extensions
