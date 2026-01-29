@@ -67,5 +67,5 @@ class ImageScanService:
                 )
 
         self.logger.info("Scan complete.")
-        # data = json.dumps(data)
+
         return data

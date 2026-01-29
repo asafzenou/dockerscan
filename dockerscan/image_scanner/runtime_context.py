@@ -1,5 +1,3 @@
-# dockerscan/image_scanner/runtime_context.py
-
 import subprocess
 import json
 

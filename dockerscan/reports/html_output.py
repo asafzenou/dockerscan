@@ -354,6 +354,81 @@ a:hover {{
     padding: 8px;
     background: #f9f9f9;
     border-radius: 3px;
+}}.analysis-section {{
+    background: #f0f8ff;
+    padding: 12px;
+    border-radius: 4px;
+    border-left: 4px solid #2980b9;
+    margin-top: 10px;
+    font-size: 12px;
+}}
+.analysis-grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 8px;
+}}
+.analysis-item {{
+    padding: 8px;
+    background: white;
+    border-radius: 3px;
+    border-left: 2px solid #3498db;
+}}
+.analysis-label {{
+    font-weight: bold;
+    color: #34495e;
+    font-size: 10px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}}
+.analysis-value {{
+    color: #555;
+    word-break: break-word;
+}}
+.risk-score {{
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    color: white;
+}}
+.risk-score-high {{
+    background: #c0392b;
+}}
+.risk-score-medium {{
+    background: #f39c12;
+}}
+.risk-score-low {{
+    background: #27ae60;
+}}
+.risk-effective {{
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    color: white;
+    margin-right: 5px;
+}}
+.risk-effective-high {{
+    background: #e74c3c;
+}}
+.risk-effective-medium {{
+    background: #f39c12;
+}}
+.risk-effective-low {{
+    background: #27ae60;
+}}
+.risk-effective-none {{
+    background: #95a5a6;
+}}
+.false-positive-badge {{
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-weight: bold;
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
 }}
 </style>
 </head>
@@ -455,6 +530,7 @@ a:hover {{
     <th>Package</th>
     <th>Version</th>
     <th>Vulnerabilities</th>
+    <th>Risk Analysis</th>
     <th>Details</th>
 </tr>
 </thead>
@@ -473,6 +549,16 @@ a:hover {{
         usage_context = pkg.get("usage_context", {})
         confidence = usage_context.get("confidence", "unknown") if usage_context else "unknown"
         used_at_runtime = usage_context.get("used_at_runtime", False) if usage_context else False
+
+        # Get analysis data if available
+        analysis = pkg.get("analysis", {})
+        risk_score = analysis.get("risk_score", None)
+        effective_risk = analysis.get("effective_risk", "NONE")
+        false_positive = analysis.get("false_positive", False)
+        reason = analysis.get("reason", "")
+        recommendation = analysis.get("recommendation", "")
+        runs_as_root = analysis.get("runs_as_root", False)
+        severities = analysis.get("severities", [])
 
         row_class = "vulnerable" if vuln_count > 0 else ""
 
@@ -579,16 +665,56 @@ a:hover {{
 
         # Build usage context badge
         usage_badge = ""
-        if usage_context:
+        if usage_context and (used_at_runtime is not None or confidence != "unknown"):
             runtime_indicator = "🔴 Runtime Used" if used_at_runtime else "⚪ Build Time"
             confidence_class = f"confidence-{confidence}".lower()
             usage_badge = f'<br><small style="margin-top: 8px; display: block;"><strong>Usage:</strong> {runtime_indicator} | Confidence: <span style="font-weight: bold;">{confidence}</span></small>'
+
+        # Build analysis section
+        analysis_html = ""
+        if analysis:
+            analysis_items = ""
+
+            # Risk Score
+            if risk_score is not None:
+                risk_score_class = "risk-score-high" if risk_score >= 7 else "risk-score-medium" if risk_score >= 4 else "risk-score-low"
+                analysis_items += f'<div class="analysis-item"><div class="analysis-label">Risk Score</div><div class="analysis-value"><span class="risk-score {risk_score_class}">{risk_score}/10</span></div></div>'
+
+            # Effective Risk
+            if effective_risk and effective_risk != "NONE":
+                risk_class = f"risk-effective-{effective_risk.lower()}"
+                analysis_items += f'<div class="analysis-item"><div class="analysis-label">Effective Risk</div><div class="analysis-value"><span class="risk-effective {risk_class}">{effective_risk}</span></div></div>'
+
+            # False Positive Status
+            if false_positive:
+                analysis_items += f'<div class="analysis-item"><div class="analysis-label">Status</div><div class="analysis-value"><span class="false-positive-badge">✓ False Positive</span></div></div>'
+
+            # Runs as Root
+            if runs_as_root:
+                analysis_items += f'<div class="analysis-item"><div class="analysis-label">Privilege</div><div class="analysis-value"><strong style="color: #c0392b;">🔴 Runs as Root</strong></div></div>'
+
+            # Recommendation
+            if recommendation:
+                analysis_items += f'<div class="analysis-item"><div class="analysis-label">Recommendation</div><div class="analysis-value">{recommendation}</div></div>'
+
+            # Reason for False Positive
+            if reason:
+                analysis_items += f'<div class="analysis-item"><div class="analysis-label">Reason</div><div class="analysis-value">{reason}</div></div>'
+
+            # Severities
+            if severities:
+                severities_text = "<br>".join(severities[:2]) if len(severities) <= 2 else "<br>".join(severities[:2]) + f"<br>+{len(severities)-2} more"
+                analysis_items += f'<div class="analysis-item"><div class="analysis-label">Severities</div><div class="analysis-value"><small>{severities_text}</small></div></div>'
+
+            if analysis_items:
+                analysis_html = f'<div class="analysis-section"><div class="analysis-grid">{analysis_items}</div></div>'
 
         html += f"""
 <tr class="{row_class}" data-package="{pkg_name.lower()}" data-vuln-count="{vuln_count}">
     <td><strong>{pkg_name}</strong>{usage_badge}</td>
     <td><code>{pkg_version}</code></td>
     <td style="text-align: center;"><strong>{vuln_count}</strong></td>
+    <td class="vuln-details">{analysis_html}</td>
     <td class="vuln-details">{details_html}</td>
 </tr>
 """

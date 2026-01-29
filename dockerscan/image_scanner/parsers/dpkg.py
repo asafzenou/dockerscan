@@ -1,20 +1,9 @@
-"""DPKG parser for Debian/Ubuntu systems."""
-
-
 class DpkgParser:
     """Parse dpkg status database."""
 
     @staticmethod
     def parse(content: str) -> list[dict]:
-        """
-        Parse dpkg status file content.
-
-        Args:
-            content: Content of /var/lib/dpkg/status
-
-        Returns:
-            List of package dictionaries with 'name' and 'version' keys.
-        """
+        """Parse dpkg status file content."""
         packages = []
         current_package = {}
 
@@ -42,7 +31,6 @@ class DpkgParser:
             if key in ("Package", "Version"):
                 current_package[key] = value
 
-        # Don't forget the last package if file doesn't end with empty line
         if current_package.get("Package") and current_package.get("Version"):
             packages.append({
                 "name": current_package["Package"],

@@ -29,10 +29,8 @@ class PackageScanner:
     # ───────────────────────── helpers ─────────────────────────
 
     def __parser_not_exits(self, os_config, filesystem_dir, os_name):
-        # Check if this is a known package manager with intentionally skipped parsing (MVP)
         package_manager = os_config.get("package_manager")
         if package_manager:
-            # Check if database actually exists
             db_detected = self._check_package_databases_exist(
                 filesystem_dir, os_config.get("db_files", [])
             )
@@ -50,7 +48,6 @@ class PackageScanner:
                 Logger().warning(
                     f"OS '{os_name}' uses {package_manager} but database not found at {os_config.get('db_files')}")
         else:
-            # No package manager at all (scratch, distroless)
             Logger().info(
                 f"OS '{os_name}' has no package manager (scratch/distroless/minimal image)"
             )
@@ -121,12 +118,9 @@ class PackageScanner:
 
     def _parse_db_file(self, db_path: Path, parser) -> list[dict]:
         try:
-            # Check if parser needs the file path (RPM) or content (dpkg/apk)
             if hasattr(parser, 'parse_file'):
-                # Parser has parse_file method (for binary files like RPM)
                 parsed = parser.parse_file(db_path)
             else:
-                # Parser expects content string (for text files like dpkg/apk)
                 with open(db_path, "r", encoding="utf-8", errors="ignore") as f:
                     content = f.read()
                 parsed = parser.parse(content)

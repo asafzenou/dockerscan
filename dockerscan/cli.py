@@ -4,45 +4,28 @@ from dockerscan.config.logger import Logger
 from dockerscan.image_scanner.image_scan_service import ImageScanService
 import json
 from dockerscan.data_packagers_checker.vulnerability_enrichment_service import VulnerabilityEnrichmentService
-from dockerscan.html_output import generate_html_report
-from dockerscan.agents.orchestrator import AnalysisOrchestrator
+from dockerscan.reports.html_output import generate_html_report
 import webbrowser
 
 def main(args, parser) -> None:
     """Main CLI entrypoint."""
     scanner = ImageScanService()
 
-    debug = True
+    debug = False
     if args.command != "scan":
         parser.print_help()
         sys.exit(1)
     if not debug:
         data = scanner.scan_image(args.image_name)
-        # data['packages'] = data['packages'][:5]
-        data = json.dumps(data)
+
     if debug:
         output_path = Path("json_debug_os_info.json")
         with open(output_path, "r") as f:
             data = json.load(f)
+        data["packages"] = data.get("packages", [])[:5]
 
     vul_enc = VulnerabilityEnrichmentService(data)
     vul_enc.enrich()
-    orchestrator = AnalysisOrchestrator()
-
-    data = vul_enc.get_data()
-
-    os_info = data.get("os_info", {})
-    runtime_context = data.get("runtime_context", {})
-
-    for pkg in data.get("packages", []):
-        analysis_result = orchestrator.analyze_package(
-            pkg=pkg,
-            os_info=os_info,
-            runtime_context=runtime_context
-        )
-        pkg.update(analysis_result)
-
-    Logger().info(json.dumps(data, indent=2, ensure_ascii=False))
     html_report_path = generate_html_report(vul_enc.get_data(), output_dir=vul_enc.get_html_output_dir())
     Logger().info(f"HTML report generated: {html_report_path.resolve()}")
 

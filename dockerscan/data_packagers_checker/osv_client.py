@@ -12,7 +12,6 @@ class OSVClient:
     API_DETAIL_URL = "https://osv.dev/vulnerability/"
     TIMEOUT = 10  # seconds
 
-    # Map OS names to OSV ecosystems
     ECOSYSTEM_MAP = {
         "debian": "Debian",
         "debian gnu/linux": "Debian",
@@ -181,7 +180,6 @@ class OSVClient:
         if not affected_entries:
             return {}
 
-        # Take the first affected entry (OSV usually duplicates per distro)
         affected = affected_entries[0]
 
         return {

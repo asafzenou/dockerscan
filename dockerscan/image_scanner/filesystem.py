@@ -97,7 +97,6 @@ class Filesystem:
                 continue
 
             try:
-                # Normalize metadata (Windows-safe)
                 member.uid = 0
                 member.gid = 0
                 member.uname = ""
@@ -120,13 +119,7 @@ class Filesystem:
         )
 
     def _load_docker_layers(self, extract_dir: Path) -> list[Path]:
-        """
-        Load filesystem layer tar files from docker save output.
-
-        Supports:
-        - OCI layout (modern docker)
-        - Legacy docker save format
-        """
+        """Load filesystem layer tar files from docker save output."""
 
         manifest_path = extract_dir / "manifest.json"
         if not manifest_path.exists():
@@ -135,7 +128,6 @@ class Filesystem:
         with open(manifest_path, "r", encoding="utf-8") as f:
             manifest = json.load(f)
 
-        # OCI format
         if isinstance(manifest, dict) and "layers" in manifest:
             blobs_dir = extract_dir / "blobs" / "sha256"
             layer_paths: list[Path] = []
@@ -155,7 +147,6 @@ class Filesystem:
 
             return layer_paths
 
-        # Legacy docker save format
         if isinstance(manifest, list) and manifest:
             image = manifest[0]
             layers = image.get("Layers")

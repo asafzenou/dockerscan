@@ -6,8 +6,8 @@ from dockerscan.image_scanner.parsers.rpm import RpmParser
 
 
 PACKAGE_PARSERS = {
-    "dpkg": DpkgParser(),  # Instance, not class
-    "apk": ApkParser(),    # Instance, not class
-    "rpm": RpmParser(),    # Instance, not class
+    "dpkg": DpkgParser(),
+    "apk": ApkParser(),
+    "rpm": RpmParser(),    #
 }
 
