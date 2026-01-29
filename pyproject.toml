@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "dockerscan"
 version = "0.1.0"
-description = "Docker image scanner MVP"
+description = "Docker image scanner that detects OS information, scans packages, identifies vulnerabilities, and generates reports"
 readme = "README.md"
 requires-python = ">=3.11"
 sdependencies = ["requests>=2.31.0"]
