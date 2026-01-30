@@ -727,6 +727,14 @@ a:hover {{
     Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
 </div>
 
+<div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #ecf0f1; color: #7f8c8d; font-size: 12px;">
+    <p style="margin: 5px 0;"><strong>Created by:</strong> Asaf Zenou</p>
+    <p style="margin: 5px 0; font-style: italic; color: #95a5a6;">
+        ⚠️ <strong>Disclaimer:</strong> This report is for informational purposes only and is <strong>NOT</strong> a professional security recommendation. 
+        Please consult with qualified security professionals before making any decisions based on this analysis.
+    </p>
+</div>
+
 </div>
 
 <script>

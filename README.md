@@ -42,208 +42,7 @@ The HTML reports are saved in: `html_reports/<OS_Name>_<Version>_<Timestamp>/vul
 
 Here's what the vulnerability report looks like in your browser:
 
-<iframe style="width: 100%; height: 600px; border: 2px solid #3498db; border-radius: 8px; margin: 20px 0;" srcdoc="
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-body { 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background: #1a1a1a; 
-    margin: 0; 
-    padding: 20px;
-    color: #e0e0e0;
-}
-.container { 
-    max-width: 100%; 
-    background: #2d2d2d; 
-    padding: 20px; 
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-}
-h1 { 
-    color: #64b5f6; 
-    border-bottom: 3px solid #3498db; 
-    padding-bottom: 10px; 
-    font-size: 24px; 
-}
-h2 { 
-    color: #90caf9; 
-    margin: 20px 0 10px 0; 
-    font-size: 16px; 
-}
-.summary { 
-    display: grid; 
-    grid-template-columns: repeat(3, 1fr); 
-    gap: 15px; 
-    margin: 20px 0; 
-}
-.summary-card { 
-    background: #3a3a3a; 
-    padding: 15px; 
-    border-radius: 8px; 
-    border-left: 4px solid #3498db; 
-    text-align: center; 
-}
-.summary-card h3 { 
-    margin: 0 0 10px 0; 
-    color: #64b5f6; 
-    font-size: 12px; 
-    text-transform: uppercase; 
-}
-.summary-card .value { 
-    font-size: 28px; 
-    font-weight: bold; 
-    color: #90caf9; 
-}
-.os-info { 
-    background: #1e3a5f; 
-    padding: 15px; 
-    border-radius: 6px; 
-    border-left: 4px solid #3498db; 
-    margin: 15px 0; 
-    font-size: 14px; 
-    color: #b3e5fc;
-}
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    margin-top: 15px; 
-    font-size: 12px;
-    background: #3a3a3a;
-}
-th { 
-    background: #1a1a1a; 
-    color: #64b5f6; 
-    font-weight: 600;
-    padding: 8px;
-    border: 1px solid #444;
-}
-td { 
-    border: 1px solid #444; 
-    padding: 8px; 
-    text-align: left; 
-    color: #e0e0e0;
-}
-tr.vulnerable { 
-    background-color: #4a1a1a; 
-}
-tr.vulnerable:hover {
-    background-color: #5a2a2a;
-}
-tr:hover {
-    background-color: #3f3f3f;
-}
-.badge { 
-    display: inline-block; 
-    padding: 3px 8px; 
-    border-radius: 4px; 
-    color: white; 
-    font-size: 10px; 
-    font-weight: bold; 
-    background: #c0392b; 
-}
-.patch-status { 
-    display: inline-block; 
-    padding: 3px 6px; 
-    border-radius: 3px; 
-    font-size: 10px; 
-    font-weight: bold; 
-    margin-top: 4px; 
-}
-.patch-available { 
-    background: #1b5e20; 
-    color: #81c784; 
-    border: 1px solid #2e7d32; 
-}
-.patch-not-available {
-    background: #b71c1c;
-    color: #ef9a9a;
-    border: 1px solid #d32f2f;
-}
-.fixed-version { 
-    font-family: 'Courier New', monospace; 
-    background: #1a1a1a; 
-    padding: 2px 6px; 
-    border-radius: 3px; 
-    font-size: 12px;
-    color: #81c784;
-}
-.timestamp { 
-    color: #90a4ae; 
-    font-size: 12px; 
-    margin-top: 15px; 
-    text-align: right; 
-}
-a {
-    color: #64b5f6;
-    text-decoration: none;
-}
-a:hover {
-    text-decoration: underline;
-}
-small {
-    color: #b0bec5;
-}
-code {
-    background: #1a1a1a;
-    color: #81c784;
-    padding: 2px 4px;
-    border-radius: 3px;
-}
-</style>
-</head>
-<body>
-<div class='container'>
-<h1>🔒 Security Vulnerability Report</h1>
-<div class='summary'>
-<div class='summary-card'><h3>Total Packages</h3><div class='value'>5</div></div>
-<div class='summary-card'><h3>Vulnerable Packages</h3><div class='value' style='color: #ef5350;'>2</div></div>
-<div class='summary-card'><h3>Total Vulnerabilities</h3><div class='value' style='color: #ef5350;'>2</div></div>
-</div>
-<h2>Operating System</h2>
-<div class='os-info'><strong>Debian GNU/Linux</strong> – Version 12</div>
-<h2>Package Vulnerabilities</h2>
-<table>
-<thead><tr><th>Package</th><th>Version</th><th>Vulns</th><th>Status</th></tr></thead>
-<tbody>
-<tr class='vulnerable'>
-<td><strong>bash</strong><br><small>🔴 Runtime</small></td>
-<td><code>5.2.15-2+b7</code></td>
-<td style='text-align: center;'><strong>1</strong></td>
-<td><span class='badge'>CVE-2022-3715</span><br><span class='patch-status patch-available'>✓ Patched</span></td>
-</tr>
-<tr class='vulnerable'>
-<td><strong>apt</strong><br><small>⚪ Build Time</small></td>
-<td><code>2.6.1</code></td>
-<td style='text-align: center;'><strong>1</strong></td>
-<td><span class='badge'>CVE-2011-3374</span><br><span class='patch-status patch-not-available'>✗ No Patch</span></td>
-</tr>
-<tr>
-<td><strong>autoconf</strong><br><small>⚪ Build Time</small></td>
-<td><code>2.71-3</code></td>
-<td style='text-align: center;'><strong>0</strong></td>
-<td><span style='color: #81c784;'>✓ Clean</span></td>
-</tr>
-<tr>
-<td><strong>automake</strong><br><small>⚪ Build Time</small></td>
-<td><code>1:1.16.5-1.3</code></td>
-<td style='text-align: center;'><strong>0</strong></td>
-<td><span style='color: #81c784;'>✓ Clean</span></td>
-</tr>
-<tr>
-<td><strong>autotools-dev</strong><br><small>⚪ Build Time</small></td>
-<td><code>20220109.1</code></td>
-<td style='text-align: center;'><strong>0</strong></td>
-<td><span style='color: #81c784;'>✓ Clean</span></td>
-</tr>
-</tbody>
-</table>
-<div class='timestamp'>Generated: 2026-01-29 22:51:16</div>
-</div>
-</body>
-</html>
-"></iframe>
+![img_2.png](img_2.png)
 
 ## What it does
 
@@ -252,19 +51,6 @@ code {
 3. Reconstructs the merged filesystem from Docker layers
 4. Reads `/etc/os-release` from the filesystem
 5. Prints the detected OS name and version
-
-## Example Output
-
-```
-Scanning Docker image: ubuntu:20.04
-Extracting image to temporary directory...
-  Running: docker save ubuntu:20.04
-  Extracting tar archive...
-Reconstructing filesystem from layers...
-  Found 3 layers
-Detecting OS...
-Detected OS: Ubuntu 20.04.6 LTS
-```
 
 ## Requirements
 
@@ -277,7 +63,7 @@ Detected OS: Ubuntu 20.04.6 LTS
 ### Core Technologies
 
 - **Python 3.11+** - Primary programming language
-- **Docker API** - For saving and managing Docker images
+- **Docker desktop** - For saving and managing Docker images
 - **requests** - HTTP library for API calls
 
 ### External APIs & Services
@@ -314,6 +100,34 @@ Detected OS: Ubuntu 20.04.6 LTS
    - Modular OS configuration support
    - Extensible package manager definitions
    - Centralized logging
+
+## Design Patterns
+
+This project leverages several established design patterns to maintain clean, modular, and extensible code:
+
+### 1. **Strategy Pattern**
+Multiple package parsing strategies (dpkg, rpm, apk) allow different OS package managers to be swapped at runtime without changing the scanning logic.
+
+### 2. **Factory Pattern**
+The `OS_CONFIGS` registry in `dockerscan/config/os_configs.py` centralizes OS object creation, allowing new distributions to be registered and instantiated dynamically.
+
+### 3. **Singleton Pattern**
+The logger in `dockerscan/config/logger.py` ensures a single, globally-accessible logging instance throughout the application lifecycle.
+
+### 4. **Registry/Configuration Pattern**
+`OSConfigBase` provides an extensible template for OS configurations, allowing new distributions to inherit and register themselves without modifying core scanning code.
+
+### 5. **Service Pattern**
+`ImageScanService` and `VulnerabilityEnrichmentService` encapsulate complex business logic (scanning, enrichment) and coordinate interactions between multiple components.
+
+### 6. **Adapter Pattern**
+`OSDetector` adapts different `/etc/os-release` formats across distributions into a unified OS detection interface.
+
+### 7. **Chain of Responsibility Pattern**
+The scanning workflow sequentially processes: extract image → detect OS → scan packages → enrich vulnerabilities, passing results through each stage.
+
+These patterns make dockerscan highly maintainable and allow you to add support for new operating systems with minimal code changes.
+
 
 ## Adding Support for New Linux Operating Systems
 
