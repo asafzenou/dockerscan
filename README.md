@@ -101,6 +101,17 @@ Here's what the vulnerability report looks like in your browser:
    - Extensible package manager definitions
    - Centralized logging
 
+### Architecture Diagram
+![Untitled diagram-2026-01-30-081539.png](Untitled%20diagram-2026-01-30-081539.png)
+
+This diagram visualizes the complete scanning workflow and shows how all components interact:
+- **Blue**: Entry point (CLI)
+- **Red**: Main services (scanning, enrichment, reporting)
+- **Green**: Configuration & strategy patterns
+- **Orange**: API client
+- **Purple**: External OSV.dev API
+- **Teal**: Output browser
+
 ## Design Patterns
 
 This project leverages several established design patterns to maintain clean, modular, and extensible code:

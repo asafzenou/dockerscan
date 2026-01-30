@@ -29,7 +29,6 @@ def main(args, parser) -> None:
     html_report_path = generate_html_report(vul_enc.get_data(), output_dir=vul_enc.get_html_output_dir())
     Logger().info(f"HTML report generated: {html_report_path.resolve()}")
 
-    # Open the HTML report in the default browser
     try:
         webbrowser.open(f"file:///{html_report_path.resolve()}")
         Logger().info("Opening report in browser...")

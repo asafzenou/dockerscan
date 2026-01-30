@@ -1,0 +1,47 @@
+graph TD
+    A["CLI Entry Point<br/>cli.py"] -->|scan image_name| B["ImageScanService"]
+
+    B -->|extract & analyze| C["Filesystem<br/>filesystem.py"]
+    B -->|detect OS| D["OSDetector<br/>os_detector.py"]
+    B -->|scan packages| E["PackageScanner<br/>package_scanner.py"]
+
+    C -->|save and extract| F["Docker Image"]
+    C -->|merge layers| G["Merged Filesystem"]
+
+    D -->|read /etc/os-release| H["OS Configs Registry<br/>os_configs.py"]
+    H -->|Factory Pattern| I["DebianConfig<br/>AlpineConfig<br/>RHELConfig"]
+
+    E -->|Strategy Pattern| J["Package Parsers"]
+    J -->|dpkg| K["dpkg.py<br/>Debian/Ubuntu"]
+    J -->|apk| L["apk.py<br/>Alpine"]
+    J -->|rpm| M["rpm.py<br/>RHEL/CentOS"]
+
+    E -->|analyze usage| N["PackageUsage<br/>package_usage.py"]
+    N -->|get context| O["RuntimeContext<br/>runtime_context.py"]
+
+    B -->|returns data| P["VulnerabilityEnrichmentService<br/>vulnerability_enrichment_service.py"]
+
+    P -->|query vulnerabilities| Q["OSV Client<br/>osv_client.py"]
+    Q -->|HTTP API| R["OSV.dev API<br/>api.osv.dev/v1/query"]
+
+    P -->|enrich data| S["Enriched Package Data<br/>analysis + vulnerabilities"]
+
+    S -->|generate report| T["HTML Report Generator<br/>html_output.py"]
+
+    T -->|output| U["HTML Report<br/>vulnerability_report.html"]
+
+    U -->|open browser| V["Web Browser<br/>webbrowser.open"]
+
+    W["Logger<br/>Singleton Pattern"] -.->|logs all| B
+    W -.->|logs all| P
+    W -.->|logs all| T
+
+    style A fill:#3498db,stroke:#2c3e50,color:#fff
+    style B fill:#e74c3c,stroke:#2c3e50,color:#fff
+    style P fill:#e74c3c,stroke:#2c3e50,color:#fff
+    style T fill:#e74c3c,stroke:#2c3e50,color:#fff
+    style H fill:#27ae60,stroke:#2c3e50,color:#fff
+    style J fill:#27ae60,stroke:#2c3e50,color:#fff
+    style Q fill:#f39c12,stroke:#2c3e50,color:#fff
+    style R fill:#9b59b6,stroke:#2c3e50,color:#fff
+    style V fill:#16a085,stroke:#2c3e50,color:#fff
