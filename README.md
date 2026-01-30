@@ -21,7 +21,7 @@ dockerscan scan ubuntu:20.04
 
 ## Output
 
-After scanning completes, dockerscan generates a comprehensive **HTML vulnerability report** that is automatically opened in your default browser. The report includes:
+After scanning completes, dockerscan generates a comprehensive **vulnerability report** that is automatically opened in your default browser. The report includes:
 
 - **Summary Dashboard** - Total packages, vulnerable packages, and vulnerability count
 - **OS Information** - Detected operating system and version
