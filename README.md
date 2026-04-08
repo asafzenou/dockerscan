@@ -151,7 +151,7 @@ graph TD
     style R fill:#9b59b6,stroke:#2c3e50,color:#fff
     style V fill:#16a085,stroke:#2c3e50,color:#fff
 ```
-![Untitled diagram-2026-01-30-081539.png](Untitled%20diagram-2026-01-30-081539.png)
+
 
 This diagram visualizes the complete scanning workflow and shows how all components interact:
 - **Blue**: Entry point (CLI)
