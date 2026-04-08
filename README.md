@@ -102,7 +102,7 @@ Here's what the vulnerability report looks like in your browser:
    - Centralized logging
 
 ### Architecture Diagram
-```mermid
+```mermaid
 graph TD
     A["CLI Entry Point<br/>cli.py"] -->|scan image_name| B["ImageScanService"]
     
