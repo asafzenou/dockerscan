@@ -114,7 +114,7 @@ graph TD
     C -->|merge layers| G["Merged Filesystem"]
     
     D -->|read /etc/os-release| H["OS Configs Registry<br/>os_configs.py"]
-    H -->|Factory Pattern| I["DebianConfig<br/>AlpineConfig<br/>RHELConfig"]
+    H --> I["DebianConfig<br/>AlpineConfig<br/>RHELConfig"]
     
     E -->|Strategy Pattern| J["Package Parsers"]
     J -->|dpkg| K["dpkg.py<br/>Debian/Ubuntu"]
@@ -160,33 +160,6 @@ This diagram visualizes the complete scanning workflow and shows how all compone
 - **Orange**: API client
 - **Purple**: External OSV.dev API
 - **Teal**: Output browser
-
-## Design Patterns
-
-This project leverages several established design patterns to maintain clean, modular, and extensible code:
-
-### 1. **Strategy Pattern**
-Multiple package parsing strategies (dpkg, rpm, apk) allow different OS package managers to be swapped at runtime without changing the scanning logic.
-
-### 2. **Factory Pattern**
-The `OS_CONFIGS` registry in `dockerscan/config/os_configs.py` centralizes OS object creation, allowing new distributions to be registered and instantiated dynamically.
-
-### 3. **Singleton Pattern**
-The logger in `dockerscan/config/logger.py` ensures a single, globally-accessible logging instance throughout the application lifecycle.
-
-### 4. **Registry/Configuration Pattern**
-`OSConfigBase` provides an extensible template for OS configurations, allowing new distributions to inherit and register themselves without modifying core scanning code.
-
-### 5. **Service Pattern**
-`ImageScanService` and `VulnerabilityEnrichmentService` encapsulate complex business logic (scanning, enrichment) and coordinate interactions between multiple components.
-
-### 6. **Adapter Pattern**
-`OSDetector` adapts different `/etc/os-release` formats across distributions into a unified OS detection interface.
-
-### 7. **Chain of Responsibility Pattern**
-The scanning workflow sequentially processes: extract image → detect OS → scan packages → enrich vulnerabilities, passing results through each stage.
-
-These patterns make dockerscan highly maintainable and allow you to add support for new operating systems with minimal code changes.
 
 
 ## Adding Support for New Linux Operating Systems
